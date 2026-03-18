@@ -11,23 +11,29 @@ pub fn parse() {
     writer()
         .input("tests/mod-recursive.winmd")
         .output("tests/mod-recursive-not.rdl")
-        .namespace("Test.C")
+        .filter("Test.C")
         .write()
         .unwrap();
 
     writer()
         .input("tests/mod-recursive.winmd")
         .output("tests/mod-recursive.rdl")
-        .namespace("Test")
-        .recursive()
+        .filter("Test")
         .write()
         .unwrap();
 
     writer()
         .input("tests/mod-recursive.winmd")
         .output("tests/mod-recursive-subset.rdl")
-        .namespace("Test.C")
-        .recursive()
+        .filter("Test.C")
+        .write()
+        .unwrap();
+
+    writer()
+        .input("tests/mod-recursive.winmd")
+        .output("tests/mod-recursive-exclude.rdl")
+        .filter("Test")
+        .filter("!Test.C")
         .write()
         .unwrap();
 }
