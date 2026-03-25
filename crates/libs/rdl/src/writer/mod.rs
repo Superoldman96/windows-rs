@@ -370,16 +370,18 @@ fn write_params(
         .filter(|param| param.sequence() != 0)
         .zip(signature_types)
         .map(|(param, ty)| {
-            let in_attr = if !param.flags().contains(metadata::ParamAttributes::Out)
-                && matches!(ty, metadata::Type::RefMut(_) | metadata::Type::PtrMut(..))
-            {
+            let has_in = param.flags().contains(metadata::ParamAttributes::In);
+            let has_out = param.flags().contains(metadata::ParamAttributes::Out);
+            let is_mutable = matches!(ty, metadata::Type::RefMut(_) | metadata::Type::PtrMut(..));
+            // When neither `In` nor `Out` is set (e.g., metadata from external sources),
+            // assume `In` as the default.
+            let effective_in = has_in || !has_out;
+            let in_attr = if effective_in && (has_out || is_mutable) {
                 quote! { #[input] }
             } else {
                 quote! {}
             };
-            let out_attr = if param.flags().contains(metadata::ParamAttributes::Out)
-                && !matches!(ty, metadata::Type::RefMut(_) | metadata::Type::PtrMut(..))
-            {
+            let out_attr = if has_out && (effective_in || !is_mutable) {
                 quote! { #[output] }
             } else {
                 quote! {}
